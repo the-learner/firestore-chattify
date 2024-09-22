@@ -8,6 +8,7 @@ import { provideMessaging, getMessaging } from '@angular/fire/messaging';
 import { provideStorage, getStorage, connectStorageEmulator } from '@angular/fire/storage';
 import { routes } from './app.routes';
 import { provideRouter } from '@angular/router';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +18,6 @@ export const appConfig: ApplicationConfig = {
       provideFunctions(() => getFunctions()),
       provideStorage(() => getStorage()),
       provideMessaging(() => getMessaging()),
-  provideRouter(routes)
+  provideRouter(routes), provideAnimationsAsync()
   ],
 };

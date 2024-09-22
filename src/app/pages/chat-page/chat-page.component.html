@@ -1,7 +1,7 @@
+<!--
 <div class="min-h-screen h-full w-full bg-navy-30">
     <div class="w-3/4 bg-navy-10 min-h-screen h-full mx-auto flex flex-col flex-grow pb-56 overflow-auto">
         @for (message of (messages$ | async); track message) {
-            <div> <!-- TODO: I think this div can be removed-->
             <div class="flex flex-col flex-grow p-4 gap-3">
                 @if (user$ | async; as user) {
                     <div class="flex flex-nowrap gap-4" [class.flex-row-reverse]="user.uid === message['uid']">
@@ -11,7 +11,7 @@
                                 <div class="p-4 rounded-lg max-w-xl flex flex-col justify-between gap-1" [class.bg-amber-200]="user.uid === message['uid']" [class.bg-white]="user.uid !== message['uid']">
                             @if (message['text'] && message['text'].length > 0){
                                 <div>
-                                    {{message['text']}} 
+                                    {{message['text']}}
                                 </div>
                             }
                             @if (message['imageUrl'] && message['imageUrl'].length > 0) {
@@ -25,7 +25,7 @@
                                 </span>
                             </div>
                         </div>
-                        
+
                             @if (message['response'] && message['response'].length > 0){
                                 <div class="transition-all opacity-30 hover:opacity-100 hover:border-2 hover:border-navy-200 hover:py-6 gap-1 p-4 rounded-lg max-w-xl flex flex-col justify-between">
                                 <div>
@@ -39,10 +39,9 @@
                             </div>
                             }
                         </div>
-                        
+
                     </div>
                 }
-            </div>
         </div>
     }
     </div>
@@ -62,4 +61,23 @@
             </button>
         </div>
     </div>
+</div>
+-->
+
+<div class="list-demo">
+  <mat-list class="demo-list">
+    <div mat-subheader>Today</div>
+    @for (message of messages; track message) {
+      <mat-list-item>
+        <img matListItemAvatar [src]="message.image" alt="Image of {{ message.from }}" />
+        <div matListItemTitle>{{ message.from }}</div>
+        <div matListItemLine>
+          <span>{{ message.subject }} -- </span>
+          <span>{{ message.message }}</span>
+        </div>
+        <mat-divider></mat-divider>
+      </mat-list-item>
+    }
+  </mat-list>
+
 </div>
