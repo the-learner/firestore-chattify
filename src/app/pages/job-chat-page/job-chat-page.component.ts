@@ -35,7 +35,7 @@ export class JobChatPageComponent {
   botUrl: string = "https://www.gstatic.com/images/branding/productlogos/waze/v8/192px.svg";
   userUrl = this.user ? this.user.photoURL : "https://www.gstatic.com/images/branding/productlogos/contacts_2022_round/v2/192px.svg";
   showPopup = false;
-  insight: string = "";
+  insight: string = "Thank you for completing your HireMind assessment!  A recruiter will review your results and be in touch if your profile matches the job requirements.";
   constructor(private route: ActivatedRoute) {}
 
   async ngOnInit() {
@@ -65,11 +65,11 @@ export class JobChatPageComponent {
 
   async sendMessageBot() {
     const cur_q = this.assessmentInfo['cur_q']
-    if (cur_q >= 5) {
+    if (cur_q >= 3) {
       if (this.assessmentInfo['is_completed']) {
         console.log("Completed already... Fetching it..");
-        await this.getInsights(this.jobId);
-        console.log(this.insight);
+        // await this.getInsights(this.jobId);
+        // console.log(this.insight);
         this.showPopup = true;
       }
       else {
@@ -123,18 +123,5 @@ export class JobChatPageComponent {
     const jobs = await getDoc(jobsRef)
     this.jobInfo = jobs.data();
     console.log(this.jobInfo);
-  }
-
-  getInsights = async (jobId: string) => {
-    const assessmentsRef = collection(this.firestore, "generations");
-    const q = query(assessmentsRef, where('candidateId', '==', this.chatService.currentUser?.uid), where("jobId", '==', jobId), limit(1));
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      console.log("No insights found...");
-    }
-    querySnapshot.forEach(x => {
-      console.log(x.data());
-      this.insight = x.get("response");
-    })
   }
 }

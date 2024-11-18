@@ -55,6 +55,10 @@ export class ChatPageComponent {
     location: string;
   }) {
     console.log("Doing something else!!", val);
-    this.router.navigate(['job-chat/' + val.id]);
+    if (this.chatService.currentUser?.email == "nedstark.448450@gmail.com") {
+      this.router.navigate(['assessments/' + val.id]);
+    } else {
+      this.router.navigate(['job-chat/' + val.id]);
+    }
   }
 }

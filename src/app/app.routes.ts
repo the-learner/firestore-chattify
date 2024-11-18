@@ -7,6 +7,7 @@ import {
 import { LoginPageComponent } from './pages/login-page/login-page.component';
 import { ChatPageComponent } from './pages/chat-page/chat-page.component';
 import {JobChatPageComponent} from './pages/job-chat-page/job-chat-page.component';
+import {RecruiterJobsComponent} from './pages/recruiter-jobs/recruiter-jobs.component';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['login']);
 const redirectLoggedInToHome = () => redirectLoggedInTo(['chat']);
@@ -33,6 +34,12 @@ export const routes: Routes = [
   {
     path: 'job-chat/:job_id',
     component: JobChatPageComponent,
+    canActivate: [AuthGuard],
+    data: { authGuardPipe: redirectUnauthorizedToLogin },
+  },
+  {
+    path: 'assessments/:job_id',
+    component: RecruiterJobsComponent,
     canActivate: [AuthGuard],
     data: { authGuardPipe: redirectUnauthorizedToLogin },
   }

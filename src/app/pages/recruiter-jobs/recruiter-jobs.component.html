@@ -1,0 +1,27 @@
+<div class="list-demo">
+  <mat-list class="demo-list">
+    @for (assessment of (assessments | async); track assessment) {
+      <mat-list-item id = "list-item" matListItem (click)="doSomethingElse(assessment)">
+          <div matListItemTitle>{{ assessment.candidateName }}</div>
+          <div matListItemLine>
+            <span>Email -- </span>
+            <span>{{ assessment.candidateEmail }}</span>
+          </div>
+          <mat-divider></mat-divider>
+        </mat-list-item>
+    }
+  </mat-list>
+</div>
+
+@if (showNoAssessments) {
+   <div>No insights found!</div>
+}
+
+@if (showPopup) {
+  <div class="popup">
+  <div class="popup-content">
+  <span class="close" (click)="showPopup = false">&times;</span>
+  <div [innerHTML]=insight></div>
+  </div>
+  </div>
+}

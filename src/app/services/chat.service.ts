@@ -93,6 +93,13 @@ export class ChatService {
     company: string;
     location: string;
   }> = [];
+
+  generations: Array<{
+    candidateId: string;
+    insight: string;
+    candidateName: string;
+    candidateEmail: string;
+  }> = [];
   constructor() {
     this.userSubscription = this.user$.subscribe((aUser: User | null) => {
         this.currentUser = aUser;
@@ -111,10 +118,11 @@ export class ChatService {
           "email_verified": result.user.emailVerified,
           "created_at": result.user.metadata.creationTime,
           "last_login": result.user.metadata.lastSignInTime,
-          "photo_url": result.user.photoURL
+          "photo_url": result.user.photoURL,
+          "type": result.user.email == "nedstark.448450@gmail.com" ? "recruiter" : "candidate"
         }
         await setDoc(user, userData);
-      await this.router.navigate(['/', 'chat']);
+      await this.router.navigate(['/', 'jobs']);
       return credential;
     })
   }
@@ -193,16 +201,13 @@ export class ChatService {
     return this.groups;
   }
 
-  // Loads chat messages history and listens for upcoming ones.
-  getAssessments = () => {
-    return this.assessments;
-  };
-
   generateInsights = async (jobId: string, text: string) => {
     const assessmentsRef = collection(this.firestore, "generations");
     const docRef = await addDoc(assessmentsRef,
       {
         'candidateId': this.currentUser?.uid,
+        'candidateName': this.currentUser?.displayName,
+        'candidateEmail': this.currentUser?.email,
         'jobId': jobId,
         'prompt': text
       });
@@ -217,8 +222,13 @@ export class ChatService {
       const docRef = await addDoc(assessmentsRef,
         {
           'candidateId': this.currentUser?.uid,
+          'candidateName': this.currentUser?.displayName,
+          'candidateEmail': this.currentUser?.email,
           'jobId': jobId,
-          'assessment': [],
+          'assessment': [{
+            "text": "Hello there " + this.currentUser?.displayName + "! I am Recruiter Bot from HireMind, and I will ask you a few questions, so let's get started!",
+            "type": "bot"
+          }],
           'started_at': Date.now(),
           'cur_q': 0,
           'is_ans': true
@@ -258,4 +268,24 @@ export class ChatService {
   requestNotificationsPermissions = async () => {};
 
   saveMessagingDeviceToken = async () => {};
+
+  async loadAssessments(jobId: string) {
+    const generationsRef = collection(this.firestore, "generations");
+    const q = query(generationsRef, where("jobId", '==', jobId));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.log("No insights found...");
+      this.generations = [];
+    }
+    querySnapshot.forEach(x => {
+      console.log("Got these insights... ", x.data());
+      this.generations.push({
+        candidateId: x.data()['candidateId'],
+        insight: x.data()['response'],
+        candidateName: x.data()['candidateName'],
+        candidateEmail: x.data()['candidateEmail']
+      })
+    });
+    return this.generations;
+  }
 }
