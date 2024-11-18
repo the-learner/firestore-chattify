@@ -1,0 +1,68 @@
+
+<mat-card class="demo-card-a11y" role="group" aria-label="Croissant information card">
+  <mat-card-title>{{ jobInfo.role }}</mat-card-title>
+  <mat-card-subtitle>{{ jobInfo.company }}, Mountain View, CA, USA </mat-card-subtitle>
+  <mat-card-content>
+    {{ jobInfo.description }}
+  </mat-card-content>
+</mat-card>
+
+<div>
+  <div class="chat-messages">
+    <mat-list class="demo-list">
+      @for (message of (messages); track message) {
+      <div class="flex flex-nowrap gap-4">
+      @if (message.type == "bot") {
+         <img class="w-10 h-10 rounded-full" [src]=botUrl alt="RecruiterBot"/>
+        <div class="message other">
+          {{message.text}}
+        </div>
+      }
+      @if (message.type == "user") {
+      <div class="reverse">
+        <img class="w-10 h-10 rounded-full" [src]=userUrl alt="Me"/>
+        <div class="message user">
+          {{message.text}}
+        </div>
+      </div>
+      }
+        </div>
+      }
+    </mat-list>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="message-input" placeholder="Type your message..." [(ngModel)]="text">
+    <button id="send-button" (click)="this.sendMessageUser()">Send</button>
+  </div>
+</div>
+
+@if (showPopup) {
+  <div class="popup">
+    <div class="popup-content">
+      <div [innerHTML]=insight></div>
+    </div>
+  </div>
+}
+
+<!--<p>This is a job description.</p>-->
+<!--<ul>-->
+<!--  <li>Job Title: Software Engineer</li>-->
+<!--  <li>Location: Mountain View, CA</li>-->
+<!--  <li>Salary: $100,000 per year</li>-->
+<!--  <li>Responsibilities:-->
+<!--    <ul>-->
+<!--      <li>Develop software</li>-->
+<!--      <li>Test software</li>-->
+<!--      <li>Deploy software</li>-->
+<!--    </ul>-->
+<!--  </li>-->
+<!--  <li>Qualifications:-->
+<!--    <ul>-->
+<!--      <li>Bachelor's degree in computer science</li>-->
+<!--      <li>2+ years of experience in software development</li>-->
+<!--      <li>Strong programming skills</li>-->
+<!--    </ul>-->
+<!--  </li>-->
+<!--</ul>-->
+<!--<p>To apply for this job, please click on the link below.</p>-->
+<!--<a href="https://www.google.com/careers">Apply Now</a>-->

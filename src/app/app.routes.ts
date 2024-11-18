@@ -6,6 +6,7 @@ import {
 } from '@angular/fire/auth-guard';
 import { LoginPageComponent } from './pages/login-page/login-page.component';
 import { ChatPageComponent } from './pages/chat-page/chat-page.component';
+import {JobChatPageComponent} from './pages/job-chat-page/job-chat-page.component';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['login']);
 const redirectLoggedInToHome = () => redirectLoggedInTo(['chat']);
@@ -24,9 +25,15 @@ export const routes: Routes = [
     data: { authGuardPipe: redirectLoggedInToHome },
   },
   {
-    path: 'chat',
+    path: 'jobs',
     component: ChatPageComponent,
     canActivate: [AuthGuard],
     data: { authGuardPipe: redirectUnauthorizedToLogin },
   },
+  {
+    path: 'job-chat/:job_id',
+    component: JobChatPageComponent,
+    canActivate: [AuthGuard],
+    data: { authGuardPipe: redirectUnauthorizedToLogin },
+  }
 ];

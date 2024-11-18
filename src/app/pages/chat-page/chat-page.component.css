@@ -1,0 +1,41 @@
+#list-item {
+  padding: 10px;
+  cursor: pointer;
+  display: block;
+}
+/* style.css */
+
+
+.chat-container {
+  position: absolute;
+  top: 8%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.chat-messages {
+  overflow-y: auto; /* Add scrollbar if messages overflow */
+  padding: 10px;
+  left: 8%;
+}
+
+.chat-input {
+  padding: 10px;
+  background-color: #f0f0f0;
+
+  /* Key changes to keep it at the bottom */
+  position: relative; /* Position relative to its normal position */
+  bottom: 0%; /* Stick to the bottom of the container */
+  left: 8%;
+}
+
+#message-input {
+  width: calc(92% - 100px); /* Adjust width as needed */
+  padding: 5px;
+  margin-right: 10px;
+}
+
+#send-button {
+  padding: 5px 10px;
+}

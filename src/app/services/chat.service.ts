@@ -16,6 +16,7 @@ import {
   DocumentReference,
   Firestore,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   collection,
@@ -25,6 +26,7 @@ import {
   Timestamp,
   serverTimestamp,
   query,
+  where,
   orderBy,
   limit,
   onSnapshot,
@@ -39,6 +41,7 @@ import {
 } from '@angular/fire/storage';
 import { getToken, Messaging, onMessage } from '@angular/fire/messaging';
 import { Router } from '@angular/router';
+import {formatDate} from '@angular/common';
 
 type ChatMessage = {
   name: string | null,
@@ -47,6 +50,14 @@ type ChatMessage = {
   uid: string | null,
   text?: string,
   imageUrl?: string
+};
+
+type JobInfo = {
+  role: string,
+  description: string,
+  minimum_qualifications: string,
+  preferred_qualifications: string,
+  responsibilities: string
 };
 
 
@@ -66,7 +77,22 @@ export class ChatService {
   user$ = user(this.auth);
   currentUser: User | null = this.auth.currentUser;
   userSubscription: Subscription;
+  assessId = "";
+   assessments = {assessments: []}
 
+  groups: Array<{
+    id: string;
+    name: string;
+    image: string;
+  }> = [];
+   questions: string[] = [];
+  jobsRef: DocumentData | undefined;
+  jobs: Array<{
+    id: string;
+    role: string;
+    company: string;
+    location: string;
+  }> = [];
   constructor() {
     this.userSubscription = this.user$.subscribe((aUser: User | null) => {
         this.currentUser = aUser;
@@ -75,9 +101,20 @@ export class ChatService {
 
   // Signs-in Friendly Chat.
   login() {
-    signInWithPopup(this.auth, this.provider).then((result) => {
+    signInWithPopup(this.auth, this.provider).then(async (result) => {
       const credential = GoogleAuthProvider.credentialFromResult(result);
-      this.router.navigate(['/', 'chat']);
+        console.log("Found!");
+        const user = doc(this.firestore, 'users', result.user.uid);
+        const userData = {
+          "name": result.user.displayName,
+          "email": result.user.email,
+          "email_verified": result.user.emailVerified,
+          "created_at": result.user.metadata.creationTime,
+          "last_login": result.user.metadata.lastSignInTime,
+          "photo_url": result.user.photoURL
+        }
+        await setDoc(user, userData);
+      await this.router.navigate(['/', 'chat']);
       return credential;
     })
   }
@@ -92,21 +129,111 @@ export class ChatService {
     })
   }
 
-  // Adds a text or image message to Cloud Firestore.
-  addMessage = async (
-    textMessage: string | null,
-    imageUrl: string | null
-  ): Promise<void | DocumentReference<DocumentData>> => {};
-
   // Saves a new message to Cloud Firestore.
-  saveTextMessage = async (messageText: string) => {
-    return this.addMessage(messageText, null);
+  saveTextMessage = async (assessmentId: string | undefined, assessments: any) => {
+    if (assessmentId != undefined) {
+      const user = doc(this.firestore, 'assessments', assessmentId);
+      await setDoc(user, assessments);
+    }
   };
+
+  loadJobs = async () => {
+    const questionRef = collection(this.firestore, "jobs");
+    console.log("Loading questions...");
+    const q = query(questionRef);
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((d: any) => {
+      this.jobs.push({
+        'id': d.id,
+        'role': d.data()['role'],
+        'company': d.data()['company'],
+        'location': 'Mountain View, CA, USA'
+      });
+    });
+    return this.jobs;
+  }
+
+  loadQuestions= async () => {
+    const questionRef = collection(this.firestore, "questions");
+    console.log("Loading questions...");
+    const q = query(questionRef);
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((d: any) => {
+      this.questions.push(d.data()['value']);
+    });
+  }
+
+  // Returns the groups a user is part of
+  loadGroups = async () => {
+    const groupsRef = collection(this.firestore, "groups");
+    console.log("Loading groups...", this.currentUser?.uid);
+    const q = query(groupsRef, where('members', 'array-contains', this.currentUser?.uid));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(async (d: any) => {
+      console.log(d.id, " => ", d.data());
+      if (d.data()['is_group']) {
+        this.groups.push(
+          {
+            "id": d.id,
+            "name": d.data()['name'],
+            "image": d.data()['photo']
+          }
+        );
+      } else {
+        const otherUser = d.data()["members"].filter((member: any) => member.id != this.currentUser?.uid)[0];
+          this.groups.push(
+            {
+              "id": d.id,
+              "name": otherUser['name'],
+              "image": otherUser['photo']
+            }
+          );
+      }
+    });
+    return this.groups;
+  }
 
   // Loads chat messages history and listens for upcoming ones.
-  loadMessages = () => {
-    return null as unknown;
+  getAssessments = () => {
+    return this.assessments;
   };
+
+  generateInsights = async (jobId: string, text: string) => {
+    const assessmentsRef = collection(this.firestore, "generations");
+    const docRef = await addDoc(assessmentsRef,
+      {
+        'candidateId': this.currentUser?.uid,
+        'jobId': jobId,
+        'prompt': text
+      });
+  }
+
+  startAssessment = async (jobId: string) => {
+    const assessmentsRef = collection(this.firestore, "assessments");
+    const q = query(assessmentsRef, where('candidateId', '==', this.currentUser?.uid), where('jobId', '==', jobId), orderBy("started_at", "desc"), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.log("Empty, creating insights...");
+      const docRef = await addDoc(assessmentsRef,
+        {
+          'candidateId': this.currentUser?.uid,
+          'jobId': jobId,
+          'assessment': [],
+          'started_at': Date.now(),
+          'cur_q': 0,
+          'is_ans': true
+        });
+      this.assessId = docRef.id;
+    }
+    else {
+      querySnapshot.forEach(doc => {
+        this.assessId = doc.id;
+      })
+    }
+    await this.loadQuestions();
+  };
+
+
 
   // Saves a new message containing an image in Firebase.
   // This first saves the image in Firebase storage.

@@ -10,5 +10,5 @@ import { RouterModule } from '@angular/router';
   imports: [HeaderComponent, RouterModule],
 })
 export class AppComponent {
-  title = 'friendlychat';
+  title = 'HireMind';
 }
